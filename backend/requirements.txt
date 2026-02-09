@@ -1,0 +1,5 @@
+“Signup, login, activity input, and dashboard pages are connected to the backend, while informational pages remain static.”
+
+flask
+flask-cors
+sqlite3
