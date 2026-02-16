@@ -21,7 +21,7 @@
     <!-- Activity Form Section (from data.html, but connected to JS) -->
     <div class="bg-white p-9 rounded-2xl shadow-lg w-full max-w-4xl my-10 mx-auto ">
         <div class="flex flex-row items-center mb-5">
-            <img class="w-40 h-40" src={{ url_for('static', filename='assets/rating.png') }} alt="rating">
+            <img class="w-40 h-40" src={{ url_for('static', filename='assets/rating.png' ) }} alt="rating">
             <h1 class="text-4xl font-bold text-center mx-4 text-gray-800">🌿 Add Daily Activity</h1>
 
         </div>
@@ -129,11 +129,13 @@
 
     <script>
         // Load navbar
-        fetch("navbar.html")
+        /*
+            fetch("navbar.html")
             .then(response => response.text())
             .then(data => {
                 document.getElementById("navbar").innerHTML = data;
             });
+        */
 
         // Activity handling
         let activities = JSON.parse(localStorage.getItem("activities")) || [];
@@ -165,11 +167,45 @@
                 notes,
             };
 
+            // ✅ Save to localStorage 
             activities.push(activity);
             localStorage.setItem("activities", JSON.stringify(activities));
+
+            // ✅ ALSO send to backend
+            fetch("/add-activity", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",   
+                body: JSON.stringify({
+                    activity: activityName,
+                    category: category,
+                    duration: calculateDuration(startTime, endTime),
+                    date: date,
+                    mood: mood,
+                    goal: goal,
+                    notes: notes
+                })
+            });
+
+
             document.getElementById("activityForm").reset();
             displayActivities();
         }
+
+        // Helper Function
+        function calculateDuration(start, end) {
+            const startParts = start.split(":");
+            const endParts = end.split(":");
+
+            const startDate = new Date(0, 0, 0, startParts[0], startParts[1]);
+            const endDate = new Date(0, 0, 0, endParts[0], endParts[1]);
+
+            const diff = (endDate - startDate) / 1000 / 60 / 60;
+            return diff;
+        }
+
 
         function displayActivities(list = activities) {
             const activityList = document.getElementById("activityList");
