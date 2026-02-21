@@ -14,11 +14,27 @@ app = Flask(__name__)
 CORS(app)
 app.secret_key = "super_secret_key"
 
+app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
+app.config['SESSION_COOKIE_SECURE'] = False
+
+# ---------------- ENERGY SYSTEM ----------------
+ENERGY_RULES = {
+    "Study": 15,
+    "Work": 10,
+    "Fitness": 10,
+    "Sleep": 7,
+    "Reading": 8,
+    "Meditation": 12,
+    "Personal": 7,
+    "Entertainment": -5,
+    "Scrolling": -12,
+    "Gaming": -8 
+}
+
 DB_NAME = "database.db"
 
-# ---------- DATABASE CONNECTION ----------
 def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_NAME, timeout=10, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -54,43 +70,6 @@ def init_db():
 
     conn.commit()
     conn.close()
-
-# ---------- API TO ADD ACTIVITY ----------
-@app.route("/add-activity", methods=["POST"])
-def add_activity():
-    print("SESSION:", dict(session))
-    print("USER ID:", session.get("user_id"))
-
-    if "user_id" not in session:
-        print("NO USER ID FOUND")
-        return jsonify({"error": "Unauthorized"}), 401
-
-    data = request.json
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT INTO activities 
-        (activity_name, category, duration, date, mood, goal, notes, prediction, user_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        data["activity"],
-        data["category"],
-        data["duration"],
-        data["date"],
-        data["mood"],
-        data["goal"],
-        data["notes"],
-        "Pending",
-        session["user_id"]
-    ))
-
-    conn.commit()
-    conn.close()
-
-    return jsonify({"message": "Activity stored successfully"})
-
 
 # -------- SIGNUP ROUTE --------
 @app.route("/signup", methods=["GET", "POST"])
@@ -133,7 +112,7 @@ def login():
 
         if user:
             session["user_id"] = user["user_id"]
-            session["email"] = user["email"]   # 👈 ADD THIS
+            session["email"] = user["email"]   
             return redirect(url_for("dashboard"))
         else:
             flash("Invalid Email or Password")
@@ -229,88 +208,170 @@ def receipt(date):
         total=total
     )
 
-@app.route("/download-receipt/<date>")
-def download_receipt(date):
+@app.route("/game-dashboard")
+def game_dashboard():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
     user_id = session["user_id"]
 
     conn = get_db_connection()
-    activities = conn.execute(
-        """
-        SELECT activity_name, duration
-        FROM activities
-        WHERE date = ? AND user_id = ?
-        """,
-        (date, user_id)
-    ).fetchall()
+    user = conn.execute("""
+        SELECT energy, streak, xp, level
+        FROM users
+        WHERE user_id = ?
+    """, (user_id,)).fetchone()
     conn.close()
 
-    if not activities:
-        return "No activities found", 404
+    # SAFE FALLBACKS (important)
+    energy = user["energy"] if user and user["energy"] is not None else 50
+    streak = user["streak"] if user and user["streak"] is not None else 0
+    xp = user["xp"] if user and user["xp"] is not None else 0
+    level = user["level"] if user and user["level"] is not None else 1
 
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer)
-    elements = []
-    styles = getSampleStyleSheet()
-
-    elements.append(Paragraph("<b>Daily Activity Receipt</b>", styles["Title"]))
-    elements.append(Spacer(1, 0.3 * inch))
-    elements.append(Paragraph(f"Date: {date}", styles["Normal"]))
-    elements.append(Spacer(1, 0.2 * inch))
-
-    total = 0
-
-    for act in activities:
-        duration_minutes = int(float(act["duration"]) * 60)
-        total += duration_minutes
-
-        hours = duration_minutes // 60
-        minutes = duration_minutes % 60
-
-        elements.append(
-            Paragraph(
-                f"{act['activity_name']} - {hours}h {minutes}m",
-                styles["Normal"]
-            )
-        )
-
-    elements.append(Spacer(1, 0.3 * inch))
-
-    total_hours = total // 60
-    total_minutes = total % 60
-
-    elements.append(
-        Paragraph(
-            f"<b>Total: {total_hours}h {total_minutes}m</b>",
-            styles["Normal"]
-        )
+    return render_template(
+        "game_dashboard.html",
+        energy=int(energy),
+        streak=int(streak),
+        xp=int(xp),
+        level=int(level)
     )
-
-    doc.build(elements)
-    buffer.seek(0)
-
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=f"receipt_{date}.pdf",
-        mimetype="application/pdf"
-    )
-
-# ---------- MAIN ----------
-if __name__ == "__main__":
-    init_db()
-    app.run(debug=True)
 
 # ---------- API TO ADD ACTIVITY ----------
 @app.route("/add-activity", methods=["POST"])
 def add_activity():
-    print("SESSION:", session)   # 👈 add this
-
     if "user_id" not in session:
         return jsonify({"error": "Unauthorized"}), 401
 
+    data = request.json
+    user_id = session["user_id"]
+
+    from datetime import datetime, timedelta
+
+    # Use timeout + autocommit control
+    conn = sqlite3.connect(DB_NAME, timeout=10)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    try:
+        # ---------------- STORE ACTIVITY ----------------
+        cursor.execute("""
+            INSERT INTO activities 
+            (activity_name, category, duration, date, mood, goal, notes, prediction, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data["activity"],
+            data["category"],
+            data["duration"],
+            data["date"],
+            data["mood"],
+            data["goal"],
+            data["notes"],
+            "Pending",
+            user_id
+        ))
+
+        # ---------------- ENERGY + STREAK SYSTEM ----------------
+        duration = int(data["duration"])
+        category = data["category"].lower()
+        mood = data["mood"].lower()
+        today = data["date"]
+
+        energy_gain = 0
+
+        # 🎯 Duration reward
+        if duration >= 90:
+            energy_gain += 20
+        elif duration >= 60:
+            energy_gain += 10
+        elif duration >= 30:
+            energy_gain += 5
+
+        # 🏋️ Category bonus
+        if category in ["workout", "exercise", "gym"]:
+            energy_gain += 15
+        elif category in ["study", "learning"]:
+            energy_gain += 8
+
+        # 😊 Mood bonus
+        if mood == "happy":
+            energy_gain += 5
+        elif mood == "productive":
+            energy_gain += 7
+
+        # ---------------- GET USER DATA ----------------
+        cursor.execute("""
+            SELECT energy, last_activity_date, streak 
+            FROM users 
+            WHERE user_id = ?
+        """, (user_id,))
+        
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        current_energy = user["energy"] if user["energy"] else 50
+        last_date = user["last_activity_date"]
+        streak = user["streak"] if user["streak"] else 0
+
+        # ---------------- STREAK LOGIC ----------------
+        today_date = datetime.strptime(today, "%Y-%m-%d")
+
+        if last_date:
+            last_date_obj = datetime.strptime(last_date, "%Y-%m-%d")
+
+            if today_date == last_date_obj + timedelta(days=1):
+                streak += 1
+                energy_gain += 10
+            elif today_date == last_date_obj:
+                pass
+            else:
+                streak = 1
+        else:
+            streak = 1
+
+        # ---------------- ENERGY CAP ----------------
+        new_energy = current_energy + energy_gain
+        new_energy = max(0, min(new_energy, 100))
+
+        # ---------------- UPDATE USER ----------------
+        cursor.execute("""
+            UPDATE users
+            SET energy = ?, last_activity_date = ?, streak = ?
+            WHERE user_id = ?
+        """, (
+            new_energy,
+            today,
+            streak,
+            user_id
+        ))
+
+        conn.commit()
+
+        return jsonify({
+            "message": "Activity stored successfully", 
+            "energy_gained": energy_gain,
+            "new_energy": new_energy,
+            "streak": streak
+        })
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        conn.close()
+   
+# Activity stored
+# energy increase smartly
+# Streak builds
+# Streak bonus applied
+# Energy capped at 100
+# Safe from crashes
+# Returns gamified response
+
+# ---------- DOWNLOAD RECEIPTS ----------
 @app.route("/download-receipt/<date>")
 def download_receipt(date):
     if "user_id" not in session:
@@ -380,7 +441,7 @@ def download_receipt(date):
         download_name=f"receipt_{date}.pdf",
         mimetype="application/pdf"
     ) 
-    
+
 # ---------- MAIN ----------
 if __name__ == "__main__":
     init_db()

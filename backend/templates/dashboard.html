@@ -41,10 +41,13 @@
                 <datalist id="categories">
                     <option value="Work">
                     <option value="Study">
-                    <option value="Leisure">
                     <option value="Fitness">
                     <option value="Sleep">
                     <option value="Personal">
+                    <option value="Medication">
+                    <option value="Entertainment">
+                    <option value="Gaming">
+                    <option value="Scrolling">
                 </datalist>
             </div>
 
@@ -167,17 +170,15 @@
                 notes,
             };
 
-            // ✅ Save to localStorage 
+            // Save locally first
             activities.push(activity);
             localStorage.setItem("activities", JSON.stringify(activities));
 
-            // ✅ ALSO send to backend
+            // Send to backend
             fetch("/add-activity", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "same-origin",   
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({
                     activity: activityName,
                     category: category,
@@ -187,11 +188,22 @@
                     goal: goal,
                     notes: notes
                 })
-            });
+            })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("SERVER RESPONSE:", data);
 
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert("Activity saved & receipt updated ✨");
 
-            document.getElementById("activityForm").reset();
-            displayActivities();
+                        // clear form AFTER success
+                        document.getElementById("activityForm").reset();
+                        displayActivities();
+                    }
+                })
+                .catch(err => console.error(err));
         }
 
         // Helper Function
@@ -202,8 +214,8 @@
             const startDate = new Date(0, 0, 0, startParts[0], startParts[1]);
             const endDate = new Date(0, 0, 0, endParts[0], endParts[1]);
 
-            const diff = (endDate - startDate) / 1000 / 60 / 60;
-            return diff;
+            const diff = (endDate - startDate) / 1000 / 60; // 🔥 minutes
+            return Math.max(1, Math.round(diff)); // never 0
         }
 
 
@@ -265,6 +277,5 @@
         window.onload = displayActivities;
     </script>
 </body>
-
 
 </html>

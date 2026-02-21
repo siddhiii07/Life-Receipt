@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Dashboard</title>
+    <style>
+        body { font-family: Arial; background: #0f172a; color: white; text-align: center; }
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            margin: 20px auto;
+            width: 300px;
+            border-radius: 15px;
+        }
+        .bar {
+            height: 20px;
+            background: #334155;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .fill {
+            height: 100%;
+            background: limegreen;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🎮 Your Productivity Profile</h1>
+
+<div class="card">
+    <h2>⚡ Energy: {{ energy }}/100</h2>
+    <div class="bar">
+        <div class="fill" style="width: {{ energy }}%;"></div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>🔥 Streak: {{ streak }} days</h2>
+</div>
+
+<div class="card">
+    <h2>⭐ Level: {{ level }}</h2>
+    <p>XP: {{ xp }}</p>
+</div>
+
+</body>
+</html>
