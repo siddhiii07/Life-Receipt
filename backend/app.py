@@ -3,12 +3,13 @@ from flask_cors import CORS
 from datetime import datetime
 import sqlite3
 from flask import send_file
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from io import BytesIO 
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+pdfmetrics.registerFont(TTFont("DejaVu", "fonts/DejaVuSans.ttf"))
+from pdf import generate_receipt_pdf
 
 app = Flask(__name__)
 CORS(app)
@@ -191,8 +192,7 @@ def receipt(date):
     total = 0
 
     for act in activities:
-        duration_hours = float(act["duration"])   # DB stores hours
-        duration_minutes = int(duration_hours * 60)
+        duration_minutes = int(act["duration"])
 
         total += duration_minutes
 
@@ -393,54 +393,39 @@ def download_receipt(date):
     if not activities:
         return "No activities found", 404
 
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer)
-    elements = []
-
-    styles = getSampleStyleSheet()
-
-    elements.append(Paragraph("<b>Daily Activity Receipt</b>", styles["Title"]))
-    elements.append(Spacer(1, 0.3 * inch))
-    elements.append(Paragraph(f"Date: {date}", styles["Normal"]))
-    elements.append(Spacer(1, 0.2 * inch))
-
-    total = 0
+    # ---------- convert DB values safely to minutes ----------
+    processed = []
 
     for act in activities:
-        duration = int(act["duration"])
-        total += duration
+        raw_duration = act["duration"]
 
-        hours = duration // 60
-        minutes = duration % 60
+        try:
+            raw_duration = float(raw_duration)
 
-        elements.append(
-            Paragraph(
-                f"{act['activity_name']} - {hours}h {minutes}m",
-                styles["Normal"]
-            )
-        )
+            # old data stored as hours (like 1.5) → convert to minutes
+            if raw_duration <= 24:
+                duration_minutes = int(raw_duration * 60)
+            else:
+                duration_minutes = int(raw_duration)
 
-    elements.append(Spacer(1, 0.3 * inch))
+        except:
+            duration_minutes = 0
 
-    total_hours = total // 60
-    total_minutes = total % 60
+        processed.append({
+            "activity_name": act["activity_name"],
+            "duration": duration_minutes
+        })
 
-    elements.append(
-        Paragraph(
-            f"<b>Total: {total_hours}h {total_minutes}m</b>",
-            styles["Normal"]
-        )
-    )
+    # ---------- generate pdf ----------
+    pdf_bytes = generate_receipt_pdf(date, processed)
 
-    doc.build(elements)
-    buffer.seek(0)
-
+    # ---------- send file ----------
     return send_file(
-        buffer,
+        BytesIO(pdf_bytes),
         as_attachment=True,
         download_name=f"receipt_{date}.pdf",
         mimetype="application/pdf"
-    ) 
+    )
 
 # ---------- MAIN ----------
 if __name__ == "__main__":

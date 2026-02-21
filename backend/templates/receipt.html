@@ -47,6 +47,7 @@
             #printBtn {
                 display: none;
             }
+
             .no-print {
                 display: none;
             }
@@ -94,8 +95,9 @@
         <div class="flex justify-between text-sm mb-1">
             <span>{{ act.name }}</span>
             <span>
-                {% set hours = act.duration // 60 %}
-                {% set minutes = act.duration % 60 %}
+                {% set mins = act.duration|int %}
+                {% set hours = mins // 60 %}
+                {% set minutes = mins % 60 %}
                 {{ hours }}h {{ minutes }}m
             </span>
         </div>
