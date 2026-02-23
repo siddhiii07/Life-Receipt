@@ -45,27 +45,35 @@ def init_db():
     cursor = conn.cursor()
 
     # Users table
+    # Users table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            email TEXT UNIQUE,
-            password TEXT
+        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        email TEXT UNIQUE,
+        password TEXT,
+        energy INTEGER DEFAULT 50,
+        streak INTEGER DEFAULT 0,
+        last_activity_date TEXT,
+        xp INTEGER DEFAULT 0,
+        level INTEGER DEFAULT 1
         )
     """)
 
     # Activities table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS activities (
-            activity_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            activity_name TEXT,
-            category TEXT,
-            duration REAL,
-            date TEXT,
-            mood TEXT,
-            goal TEXT,
-            notes TEXT,
-            prediction TEXT
+        activity_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        activity_name TEXT,
+        category TEXT,
+        duration REAL,
+        date TEXT,
+        mood TEXT,
+        goal TEXT,
+        notes TEXT,
+        prediction TEXT,
+        receipt_id TEXT
         )
     """)
 
@@ -193,19 +201,33 @@ def receipt(date):
 
     for act in activities:
         duration_minutes = int(act["duration"])
-
         total += duration_minutes
-
         processed.append({
             "name": act["activity_name"],
             "duration": duration_minutes
         })
 
+   
+    # ---------- FETCH STORED RECEIPT ID ----------
+    conn = get_db_connection()
+    receipt_row = conn.execute(
+        """
+        SELECT receipt_id FROM activities
+        WHERE user_id = ? AND date = ?
+        LIMIT 1
+        """,
+        (user_id, date)
+    ).fetchone()
+    conn.close()
+
+    receipt_id = receipt_row["receipt_id"] if receipt_row else "N/A"
+
     return render_template(
         "receipt.html",
         date=date,
         activities=processed,
-        total=total
+        total=total,
+        receipt_id=receipt_id
     )
 
 @app.route("/game-dashboard")
@@ -248,18 +270,45 @@ def add_activity():
 
     from datetime import datetime, timedelta
 
-    # Use timeout + autocommit control
     conn = sqlite3.connect(DB_NAME, timeout=10)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     try:
-        # ---------------- STORE ACTIVITY ----------------
+        # ---------- CHECK EXISTING RECEIPT ----------
+        existing_receipt = cursor.execute(
+            """
+            SELECT receipt_id FROM activities
+            WHERE user_id = ? AND date = ?
+            LIMIT 1
+            """,
+            (user_id, data["date"])
+        ).fetchone()
+
+        if existing_receipt:
+            receipt_id = existing_receipt["receipt_id"]
+        else:
+            formatted_date = data["date"].replace("-", "")
+
+            receipt_count = cursor.execute(
+                """
+                SELECT COUNT(DISTINCT date)
+                FROM activities
+                WHERE user_id = ?
+                """,
+                (user_id,)
+            ).fetchone()[0]
+
+            receipt_number = str(receipt_count + 1).zfill(3)
+            receipt_id = f"RCPT-{formatted_date}-U{user_id}-{receipt_number}"
+
+        # ---------- STORE ACTIVITY ----------
         cursor.execute("""
             INSERT INTO activities 
-            (activity_name, category, duration, date, mood, goal, notes, prediction, user_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (user_id, activity_name, category, duration, date, mood, goal, notes, prediction, receipt_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
+            user_id,
             data["activity"],
             data["category"],
             data["duration"],
@@ -268,10 +317,10 @@ def add_activity():
             data["goal"],
             data["notes"],
             "Pending",
-            user_id
+            receipt_id
         ))
 
-        # ---------------- ENERGY + STREAK SYSTEM ----------------
+        # ---------- ENERGY + STREAK SYSTEM ----------
         duration = int(data["duration"])
         category = data["category"].lower()
         mood = data["mood"].lower()
@@ -279,7 +328,7 @@ def add_activity():
 
         energy_gain = 0
 
-        # 🎯 Duration reward
+        # Duration reward
         if duration >= 90:
             energy_gain += 20
         elif duration >= 60:
@@ -287,19 +336,19 @@ def add_activity():
         elif duration >= 30:
             energy_gain += 5
 
-        # 🏋️ Category bonus
+        # Category bonus
         if category in ["workout", "exercise", "gym"]:
             energy_gain += 15
         elif category in ["study", "learning"]:
             energy_gain += 8
 
-        # 😊 Mood bonus
+        # Mood bonus
         if mood == "happy":
             energy_gain += 5
         elif mood == "productive":
             energy_gain += 7
 
-        # ---------------- GET USER DATA ----------------
+        # ---------- GET USER DATA ----------
         cursor.execute("""
             SELECT energy, last_activity_date, streak 
             FROM users 
@@ -315,7 +364,6 @@ def add_activity():
         last_date = user["last_activity_date"]
         streak = user["streak"] if user["streak"] else 0
 
-        # ---------------- STREAK LOGIC ----------------
         today_date = datetime.strptime(today, "%Y-%m-%d")
 
         if last_date:
@@ -331,11 +379,9 @@ def add_activity():
         else:
             streak = 1
 
-        # ---------------- ENERGY CAP ----------------
         new_energy = current_energy + energy_gain
         new_energy = max(0, min(new_energy, 100))
 
-        # ---------------- UPDATE USER ----------------
         cursor.execute("""
             UPDATE users
             SET energy = ?, last_activity_date = ?, streak = ?
@@ -350,7 +396,8 @@ def add_activity():
         conn.commit()
 
         return jsonify({
-            "message": "Activity stored successfully", 
+            "message": "Activity stored successfully",
+            "receipt_id": receipt_id,
             "energy_gained": energy_gain,
             "new_energy": new_energy,
             "streak": streak
@@ -362,7 +409,6 @@ def add_activity():
 
     finally:
         conn.close()
-   
 # Activity stored
 # energy increase smartly
 # Streak builds
@@ -432,47 +478,3 @@ if __name__ == "__main__":
     init_db()
     app.run(debug=True)
     
-app = Flask(__name__)
-CORS(app)
-app.secret_key = "super_secret_key"
-
-DB_NAME = "database.db"
-
-# ---------- DATABASE CONNECTION ----------
-def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-# ---------- CREATE TABLES ----------
-def init_db():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Users table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            email TEXT UNIQUE,
-            password TEXT
-        )
-    """)
-
-    # Activities table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS activities (
-            activity_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            activity_name TEXT,
-            category TEXT,
-            duration REAL,
-            date TEXT,
-            mood TEXT,
-            goal TEXT,
-            notes TEXT,
-            prediction TEXT
-        )
-    """)
-
-    conn.commit()
-    conn.close()

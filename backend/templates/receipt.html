@@ -80,16 +80,16 @@
         </div>
 
         <!-- Header -->
-        <h2 class="text-center text-2xl font-bold tracking-widest mb-1">
-            LIFE RECEIPT
-        </h2>
+       <h2 class="text-center text-2xl font-bold tracking-widest mb-1">
+       LIFE RECEIPT</h2>
 
-        <p class="text-center text-sm mb-4">
-            {{ date }}
-        </p>
+       <p class="text-center text-sm mb-1">
+       {{ date }}</p>
 
-        <hr class="border-dashed border-gray-400 mb-4">
+      <p class="text-center text-xs text-gray-600 mb-4">
+       Receipt ID: {{ receipt_id }}</p>
 
+      <hr class="border-dashed border-gray-400 mb-4">
         <!-- Activity List -->
         {% for act in activities %}
         <div class="flex justify-between text-sm mb-1">
