@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Game Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial; background: #0f172a; color: white; text-align: center; }
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            color: white;
+            text-align: center;
+        }
+
         .card {
             background: #1e293b;
             padding: 20px;
@@ -11,37 +19,71 @@
             width: 300px;
             border-radius: 15px;
         }
+
         .bar {
             height: 20px;
             background: #334155;
             border-radius: 10px;
             overflow: hidden;
+            margin-top: 10px;
         }
+
         .fill {
             height: 100%;
             background: limegreen;
+            transition: width 0.6s ease-in-out;
+        }
+
+        .xp-fill {
+            height: 100%;
+            background: gold;
+            transition: width 0.6s ease-in-out;
         }
     </style>
 </head>
+
 <body>
 
-<h1>🎮 Your Productivity Profile</h1>
+    <h1>🎮 Your Productivity Profile</h1>
 
-<div class="card">
-    <h2>⚡ Energy: {{ energy }}/100</h2>
-    <div class="bar">
-        <div class="fill" style="width: {{ energy }}%;"></div>
+    <div class="card">
+        <h2>📊 Today's Status</h2>
+
+        {% if today_status == "Productive" %}
+        <p style="color:limegreen;font-size:20px;">🔥 Productive Day</p>
+
+        {% elif today_status == "Leisure" %}
+        <p style="color:orange;font-size:20px;">🌙 Leisure Day</p>
+
+        {% else %}
+        <p style="color:gray;font-size:18px;">No activities logged today</p>
+        {% endif %}
+
     </div>
-</div>
 
-<div class="card">
-    <h2>🔥 Streak: {{ streak }} days</h2>
-</div>
+    <!-- Energy -->
+    <div class="card">
+        <h2>⚡ Energy: {{ energy }}/100</h2>
+        <div class="bar">
+            <div class="fill" style="width: {{ energy }}%;"></div>
+        </div>
+    </div>
 
-<div class="card">
-    <h2>⭐ Level: {{ level }}</h2>
-    <p>XP: {{ xp }}</p>
-</div>
+    <!-- Streak -->
+    <div class="card">
+        <h2>🔥 Streak: {{ streak }} days</h2>
+    </div>
+
+    <!-- Level + XP -->
+    <div class="card">
+        <h2>⭐ Level: {{ level }}</h2>
+        <p>XP: {{ xp }} / 100</p>
+
+        <div class="bar">
+            <div class="xp-fill" style="width: {{ xp }}%;"></div>
+        </div>
+    </div>
 
 </body>
+
 </html>
