@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Analytics</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+{% include "navbar.html" %}
+
+<div class="max-w-6xl mx-auto mt-10">
+
+<h1 class="text-3xl font-bold text-center mb-10">
+📊 Activity Analytics
+</h1>
+
+<div class="grid grid-cols-2 gap-8">
+
+<!-- PIE CHART -->
+<div class="bg-white p-6 rounded-xl shadow">
+<h2 class="text-lg font-semibold mb-4 text-center">Activity Distribution</h2>
+<canvas id="pieChart"></canvas>
+</div>
+
+<!-- BAR CHART -->
+<div class="bg-white p-6 rounded-xl shadow">
+<h2 class="text-lg font-semibold mb-4 text-center">Time Spent (Minutes)</h2>
+<canvas id="barChart"></canvas>
+</div>
+
+<!-- PRODUCTIVITY CHART -->
+<div class="bg-white p-6 rounded-xl shadow">
+<h2 class="text-lg font-semibold mb-4 text-center">Productive vs Leisure</h2>
+<canvas id="productivityChart"></canvas>
+</div>
+
+<!-- MOOD CHART -->
+<div class="bg-white p-6 rounded-xl shadow">
+<h2 class="text-lg font-semibold mb-4 text-center">Mood Distribution</h2>
+<canvas id="moodChart"></canvas>
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const study = {{ study }};
+const fitness = {{ fitness }};
+const entertainment = {{ entertainment }};
+const scrolling = {{ scrolling }};
+
+const productive = {{ productive }};
+const leisure = {{ leisure }};
+
+const moods = {{ moods|tojson }};
+
+
+// PIE CHART
+new Chart(document.getElementById('pieChart'), {
+    type: 'pie',
+    data: {
+        labels: ['Study','Fitness','Entertainment','Scrolling'],
+        datasets: [{
+            data: [study, fitness, entertainment, scrolling],
+            backgroundColor: [
+                '#22c55e',
+                '#3b82f6',
+                '#f59e0b',
+                '#ef4444'
+            ]
+        }]
+    }
+});
+
+
+// BAR CHART
+new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Study','Fitness','Entertainment','Scrolling'],
+        datasets: [{
+            label: "Minutes",
+            data: [study, fitness, entertainment, scrolling],
+            backgroundColor: '#6366f1'
+        }]
+    }
+});
+
+
+// PRODUCTIVITY CHART
+new Chart(document.getElementById('productivityChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Productive','Leisure'],
+        datasets: [{
+            data: [productive, leisure],
+            backgroundColor: [
+                '#22c55e',
+                '#ef4444'
+            ]
+        }]
+    }
+});
+
+
+// MOOD CHART
+new Chart(document.getElementById('moodChart'), {
+    type: 'bar',
+    data: {
+        labels: Object.keys(moods),
+        datasets: [{
+            label: "Mood Count",
+            data: Object.values(moods),
+            backgroundColor: '#f59e0b'
+        }]
+    }
+});
+
+</script>
+
+</body>
+</html>
