@@ -45,7 +45,6 @@ def init_db():
     cursor = conn.cursor()
 
     # Users table
-    # Users table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -129,13 +128,6 @@ def login():
 
     return render_template("login.html")
 
-
-"""@app.route("/data")
-def data_page():
-    if "user_id" not in session:
-        return redirect("/login")
-
-    return render_template("data.html")"""
 
 @app.route("/logout")
 def logout():
