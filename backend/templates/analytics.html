@@ -1,129 +1,206 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Analytics</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>
+<head>
+    <title>Analytics</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
 
 </head>
+<style>
+    body {
+        font-family: 'Oswald', sans-serif;
+    }
+
+    h1{
+        font-family: 'Bitcount Grid Double Ink', cursive;
+    }
+    h2{
+        font-family: 'Space Grotesk', sans-serif;
+    }
+</style>
 
 <body class="bg-gray-100">
 
-{% include "navbar.html" %}
+    {% include "navbar.html" %}
 
-<div class="max-w-6xl mx-auto mt-10">
+    <div class="max-w-6xl mx-auto mt-10">
 
-<h1 class="text-3xl font-bold text-center mb-10">
-📊 Activity Analytics
-</h1>
+        <h1 class="text-3xl text-center mb-6 tracking-wide">
+            📊 Activity Analysis
+        </h1>
 
-<div class="grid grid-cols-2 gap-8">
+        <h2 class="text-center text-lg mb-6">
+            {% if selected_date %}
+            📅 Showing: {{ selected_date }}
+            {% else %}
+            All Time Analysis
+            {% endif %}
+        </h2>
 
-<!-- PIE CHART -->
-<div class="bg-white p-6 rounded-xl shadow">
-<h2 class="text-lg font-semibold mb-4 text-center">Activity Distribution</h2>
-<canvas id="pieChart"></canvas>
-</div>
+        <!-- DATE SELECTOR -->
+        <div class="bg-white p-6 rounded-xl shadow mb-8">
 
-<!-- BAR CHART -->
-<div class="bg-white p-6 rounded-xl shadow">
-<h2 class="text-lg font-semibold mb-4 text-center">Time Spent (Minutes)</h2>
-<canvas id="barChart"></canvas>
-</div>
+            <h2 class="text-lg mb-4 text-gray-700">📅 Select Date</h2>
 
-<!-- PRODUCTIVITY CHART -->
-<div class="bg-white p-6 rounded-xl shadow">
-<h2 class="text-lg font-semibold mb-4 text-center">Productive vs Leisure</h2>
-<canvas id="productivityChart"></canvas>
-</div>
+            <div class="space-y-3">
 
-<!-- MOOD CHART -->
-<div class="bg-white p-6 rounded-xl shadow">
-<h2 class="text-lg font-semibold mb-4 text-center">Mood Distribution</h2>
-<canvas id="moodChart"></canvas>
-</div>
+                <!-- ALL TIME -->
+                <a href="/analytics" class="block p-4 rounded-lg transition
+           {{ 'bg-blue-500 text-white shadow-md' if not selected_date else 'bg-gray-100 hover:bg-gray-200' }}">
 
-</div>
+                    <div class="flex justify-between">
+                        <span>All Time</span>
+                        <span>→</span>
+                    </div>
+                </a>
 
-</div>
+                <!-- DATES -->
+                {% for d in dates %}
+                <a href="/analytics?date={{ d['date'] }}" class="block p-4 rounded-lg transition
+           {% if selected_date == d['date'] %}
+               bg-blue-500 text-white shadow-md
+           {% else %}
+               bg-gray-100 hover:bg-gray-200
+           {% endif %}">
+
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-500">Receipt</span>
+                        <span>→</span>
+                    </div>
+
+                    <div class="text-lg font-semibold">
+                        {{ d["date"] }}
+                    </div>
+
+                </a>
+                {% endfor %}
+
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow mb-8">
+            <h2 class="text-lg mb-4 text-gray-700">🧠 Insights</h2>
+
+            {% for insight in insights %}
+            <p class="mb-2 text-gray-600 leading-relaxed">{{ insight }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="bg-yellow-50 border border-yellow-200 p-6 rounded-xl shadow mb-6">
+
+            <h2 class="text-lg mb-2 text-yellow-700">💡 Tip of the Day</h2>
+
+            <p class="text-gray-700">
+                {{ tip }}
+            </p>
+
+        </div>
+
+        <div class="grid grid-cols-2 gap-8">
+
+            <!-- PIE CHART -->
+            <div <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">>
+                <h2 class="text-lg font-semibold mb-4 text-center">Activity Distribution</h2>
+                <canvas id="pieChart"></canvas>
+            </div>
+
+            <!-- BAR CHART -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+                <h2 class="text-lg font-semibold mb-4 text-center">Time Spent (Minutes)</h2>
+                <canvas id="barChart"></canvas>
+            </div>
+
+            <!-- PRODUCTIVITY -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+                <h2 class="text-lg font-semibold mb-4 text-center">Productive vs Leisure</h2>
+                <canvas id="productivityChart"></canvas>
+            </div>
+
+            <!-- MOOD -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+                <h2 class="text-lg font-semibold mb-4 text-center">Mood Distribution</h2>
+                <canvas id="moodChart"></canvas>
+            </div>
+
+        </div>
+
+    </div>
 
 
-<script>
+    <script>
 
-const study = {{ study }};
-const fitness = {{ fitness }};
-const entertainment = {{ entertainment }};
-const scrolling = {{ scrolling }};
+        const study = {{ study }};
+        const fitness = {{ fitness }};
+        const entertainment = {{ entertainment }};
+        const scrolling = {{ scrolling }};
 
-const productive = {{ productive }};
-const leisure = {{ leisure }};
+        const productive = {{ productive }};
+        const leisure = {{ leisure }};
 
-const moods = {{ moods|tojson }};
+        const moods = {{ moods| tojson }};
 
+        // PIE
+        new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Study', 'Fitness', 'Entertainment', 'Scrolling'],
+                datasets: [{
+                    data: [study, fitness, entertainment, scrolling],
+                    backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444']
+                }]
+            }
+        });
 
-// PIE CHART
-new Chart(document.getElementById('pieChart'), {
-    type: 'pie',
-    data: {
-        labels: ['Study','Fitness','Entertainment','Scrolling'],
-        datasets: [{
-            data: [study, fitness, entertainment, scrolling],
-            backgroundColor: [
-                '#22c55e',
-                '#3b82f6',
-                '#f59e0b',
-                '#ef4444'
-            ]
-        }]
-    }
-});
+        // BAR
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Study', 'Fitness', 'Entertainment', 'Scrolling'],
+                datasets: [{
+                    label: "Minutes",
+                    data: [study, fitness, entertainment, scrolling],
+                    backgroundColor: '#6366f1'
+                }]
+            }
+        });
 
+        // PRODUCTIVITY
+        new Chart(document.getElementById('productivityChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Productive', 'Leisure'],
+                datasets: [{
+                    data: [productive, leisure],
+                    backgroundColor: ['#22c55e', '#ef4444']
+                }]
+            }
+        });
 
-// BAR CHART
-new Chart(document.getElementById('barChart'), {
-    type: 'bar',
-    data: {
-        labels: ['Study','Fitness','Entertainment','Scrolling'],
-        datasets: [{
-            label: "Minutes",
-            data: [study, fitness, entertainment, scrolling],
-            backgroundColor: '#6366f1'
-        }]
-    }
-});
+        // MOOD
+        new Chart(document.getElementById('moodChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(moods),
+                datasets: [{
+                    label: "Mood Count",
+                    data: Object.values(moods),
+                    backgroundColor: '#f59e0b'
+                }]
+            }
+        });
 
-
-// PRODUCTIVITY CHART
-new Chart(document.getElementById('productivityChart'), {
-    type: 'doughnut',
-    data: {
-        labels: ['Productive','Leisure'],
-        datasets: [{
-            data: [productive, leisure],
-            backgroundColor: [
-                '#22c55e',
-                '#ef4444'
-            ]
-        }]
-    }
-});
-
-
-// MOOD CHART
-new Chart(document.getElementById('moodChart'), {
-    type: 'bar',
-    data: {
-        labels: Object.keys(moods),
-        datasets: [{
-            label: "Mood Count",
-            data: Object.values(moods),
-            backgroundColor: '#f59e0b'
-        }]
-    }
-});
-
-</script>
+    </script>
 
 </body>
+
 </html>

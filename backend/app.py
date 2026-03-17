@@ -268,7 +268,7 @@ def game_dashboard():
     conn = get_db_connection()
 
     user = conn.execute("""
-        SELECT energy, streak, xp, level
+        SELECT energy, streak, xp, level, badge
         FROM users
         WHERE user_id = ?
     """, (user_id,)).fetchone()
@@ -288,6 +288,7 @@ def game_dashboard():
     streak = user["streak"] if user and user["streak"] is not None else 0
     xp = user["xp"] if user and user["xp"] is not None else 0
     level = user["level"] if user and user["level"] is not None else 1
+    badge = user["badge"] if user and user["badge"] else "No Badge"
 
     today_status = prediction_row["prediction"] if prediction_row else None
 
@@ -297,6 +298,7 @@ def game_dashboard():
         streak=int(streak),
         xp=int(xp),
         level=int(level),
+        badge=badge,
         today_status=today_status
     )
     
@@ -307,66 +309,85 @@ def analytics():
         return redirect(url_for("login"))
 
     user_id = session["user_id"]
+    selected_date = request.args.get("date")
 
     conn = get_db_connection()
 
-    # -------- ACTIVITY DATA --------
-    activities = conn.execute("""
-        SELECT category, duration
+    # -------- GET ALL DATES --------
+    dates = conn.execute("""
+        SELECT DISTINCT date
         FROM activities
         WHERE user_id = ?
+        ORDER BY date DESC
     """, (user_id,)).fetchall()
 
-    # -------- PRODUCTIVITY DATA --------
-    prediction_data = conn.execute("""
-        SELECT prediction, COUNT(*) as total
-        FROM activities
-        WHERE user_id = ?
-        GROUP BY prediction
-    """, (user_id,)).fetchall()
+    # -------- FETCH DATA BASED ON DATE --------
+    if selected_date:
+        activities = conn.execute("""
+            SELECT category, duration
+            FROM activities
+            WHERE user_id = ? AND date = ?
+        """, (user_id, selected_date)).fetchall()
 
-    # -------- MOOD DATA --------
-    mood_data = conn.execute("""
-        SELECT mood, COUNT(*) as total
-        FROM activities
-        WHERE user_id = ?
-        GROUP BY mood
-    """, (user_id,)).fetchall()
+        prediction_data = conn.execute("""
+            SELECT prediction, COUNT(*) as total
+            FROM activities
+            WHERE user_id = ? AND date = ?
+            GROUP BY prediction
+        """, (user_id, selected_date)).fetchall()
+
+        mood_data = conn.execute("""
+            SELECT mood, COUNT(*) as total
+            FROM activities
+            WHERE user_id = ? AND date = ?
+            GROUP BY mood
+        """, (user_id, selected_date)).fetchall()
+
+    else:
+        activities = conn.execute("""
+            SELECT category, duration
+            FROM activities
+            WHERE user_id = ?
+        """, (user_id,)).fetchall()
+
+        prediction_data = conn.execute("""
+            SELECT prediction, COUNT(*) as total
+            FROM activities
+            WHERE user_id = ?
+            GROUP BY prediction
+        """, (user_id,)).fetchall()
+
+        mood_data = conn.execute("""
+            SELECT mood, COUNT(*) as total
+            FROM activities
+            WHERE user_id = ?
+            GROUP BY mood
+        """, (user_id,)).fetchall()
 
     conn.close()
 
     # -------- ACTIVITY TOTALS --------
-    study = 0
-    fitness = 0
-    entertainment = 0
-    scrolling = 0
+    study = fitness = entertainment = scrolling = 0
 
     for act in activities:
-
         cat = act["category"].lower()
         dur = float(act["duration"])
 
         if cat == "study":
             study += dur
-
-        elif cat in ["fitness","gym","exercise"]:
+        elif cat in ["fitness","gym","exercise","workout"]:
             fitness += dur
-
         elif cat in ["entertainment","gaming"]:
             entertainment += dur
-
-        elif cat == "scrolling":
+        elif cat in ["scrolling","social media"]:
             scrolling += dur
 
     # -------- PRODUCTIVITY COUNTS --------
-    productive = 0
-    leisure = 0
+    productive = leisure = 0
 
     for row in prediction_data:
-
         if row["prediction"] == "Productive":
             productive = row["total"]
-
         elif row["prediction"] == "Leisure":
             leisure = row["total"]
 
@@ -375,6 +396,49 @@ def analytics():
     for row in mood_data:
         moods[row["mood"]] = row["total"]
 
+    insights = []
+    # Productivity insight
+    if productive > leisure:
+        insights.append("— You're having more productive days than leisure ones. Keep it up!")
+    else:
+        insights.append("Try to reduce leisure activities and focus more on productive tasks.")
+    
+    # Study insight
+    if study >= 120:
+        insights.append("Great job! You're dedicating strong time to study.")
+    elif study > 0:
+        insights.append("Try increasing your study time for better progress.")
+    else:
+        insights.append("You haven't studied yet. Start small today!")
+
+    # Scrolling warning
+    if scrolling > 60:
+        insights.append("High screen time detected. Consider reducing scrolling.")
+
+    # Fitness insight
+    if fitness > 0:
+        insights.append("Nice! You're staying active.")
+    else:
+        insights.append("Try adding some physical activity to your routine.")
+
+    # Mood insight
+    if "happy" in moods and moods["happy"] > 0:
+        insights.append("Your mood looks positive. Great sign!")
+    
+    if study > entertainment:
+        insights.append("You're prioritizing learning over entertainment. Great balance!")
+    
+    # -------- RANDOM TIP --------
+    import random
+    tips = [
+        "Start your day with your hardest task.",
+        "Use the 25-minute focus technique (Pomodoro).",
+        "Take short breaks to stay fresh.",
+        "Avoid distractions while studying.",
+        "Plan your day the night before."
+    ]
+    random_tip = random.choice(tips)
+    
     return render_template(
         "analytics.html",
         study=study,
@@ -383,7 +447,11 @@ def analytics():
         scrolling=scrolling,
         productive=productive,
         leisure=leisure,
-        moods=moods
+        moods=moods,
+        dates=dates,
+        selected_date=selected_date,
+        insights=insights,
+        tip=random_tip
     )
 
 # ---------- API TO ADD ACTIVITY ----------
@@ -490,13 +558,26 @@ def add_activity():
 
         if not user:
             return jsonify({"error": "User not found"}), 404
-
-        current_energy = user["energy"] if user["energy"] else 30
-        last_date = user["last_activity_date"]
+        
+        last_date = user["last_activity_date"] if user["last_activity_date"] else None
+        # ---------- DAILY RESET LOGIC ----------
+        if last_date is None:
+            current_energy = 30
+        elif last_date != today:
+            current_energy = 0   # clean slate everyday
+        else:
+            current_energy = user["energy"] or 0    
+        # ---------- USER STATS ----------          
         streak = user["streak"] if user["streak"] else 0
         current_xp = user["xp"] if user["xp"] else 0
         current_level = user["level"] if user["level"] else 1
-
+        badge = user["badge"] if "badge" in user.keys() else None
+        
+        # ---------- DEFAULT VALUES ----------
+        new_energy = current_energy
+        new_xp = current_xp
+        new_level = current_level
+        
         # ---------- ONLY UPDATE STATS IF ACTIVITY IS TODAY ----------
         if activity_date == today:
 
@@ -508,15 +589,28 @@ def add_activity():
                 if today_date == last_date_obj + timedelta(days=1):
                     streak += 1
                     energy_gain += 10
+
                 elif today_date == last_date_obj:
+                    # SAME DAY → do nothing, keep streak
                     pass
+ 
                 else:
                     streak = 1
+            
             else:
                 streak = 1
 
             new_energy = current_energy + energy_gain
             new_energy = max(0, min(new_energy, 100))
+            
+            # ---------- BADGE SYSTEM ----------
+            badge = None
+            if streak >= 30:
+                badge = "Gold 🥇"
+            elif streak >= 14:
+                badge = "Silver 🥈"
+            elif streak >= 7:
+                badge = "Bronze 🥉"
 
             # ----- XP SYSTEM -----
             new_xp = current_xp + xp_gain
@@ -534,21 +628,27 @@ def add_activity():
             new_xp = current_xp
             new_level = current_level
 
+        if last_date != today:
+            updated_last_date = today
+        else:
+            updated_last_date = last_date
+            
         # ---------- UPDATE USER ----------
         cursor.execute("""
             UPDATE users
-            SET energy = ?, last_activity_date = ?, streak = ?, xp = ?, level = ?
+            SET energy = ?, last_activity_date = ?, streak = ?, xp = ?, level = ?, badge =?
             WHERE user_id = ?
         """, (
             new_energy,
-            activity_date,
+            updated_last_date,
             streak,
             new_xp,
             new_level,
+            badge,
             user_id
         ))
         
-                # ---------- LSTM DAILY PRODUCTIVITY PREDICTION ----------
+        # ---------- LSTM DAILY PRODUCTIVITY PREDICTION ----------
         day_activities = cursor.execute("""
             SELECT category, duration
             FROM activities

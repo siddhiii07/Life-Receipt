@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{% block title %}App{% endblock %}</title>
+
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GLOBAL STYLE -->
+    <style>
+        body {
+            font-family: 'Oswald', sans-serif;
+            background: #0f172a;
+            color: white;
+        }
+
+        h1 {
+            font-family: 'Bitcount Grid Double Ink', cursive;
+        }
+
+        h2 {
+            font-family: 'Oswald', sans-serif;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* ✨ HOVER EFFECT */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .light-card {
+            background: white;
+            color: black;
+        }
+
+        .bar {
+            height: 20px;
+            background: #334155;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .fill {
+            height: 100%;
+            background: limegreen;
+            transition: width 0.6s ease-in-out;
+        }
+
+        .xp-fill {
+            height: 100%;
+            background: gold;
+            transition: width 0.6s ease-in-out;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    {% include "navbar.html" %}
+
+    {% block content %}{% endblock %}
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+
+</html>
