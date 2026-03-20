@@ -24,6 +24,16 @@
 
 <body class="bg-gradient-to-r from-green-200 to-blue-200">
     {% include "navbar.html" %}
+
+    <!-- Flash message here -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div id="flash-message"
+        class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-md text-gray-800 px-6 py-3 rounded-xl shadow-2xl text-center z-50 border border-gray-200 transition-all duration-500">
+      {{ messages[0] }}
+    </div>
+    {% endif %}
+    {% endwith %}
     <!-- Navbar
     <div class="flex p-2 justify-between items-center bg-black font-sans text-white relative z-50">
         <div class="flex items-center">
@@ -78,21 +88,22 @@
     <!-- Hero Section -->
     <div class="flex flex-col md:flex-row justify-center items-center p-8">
         <div class="m-4">
-            <img class="p-3 w-60 md:w-80 rounded-2xl hover:scale-110 transform transition-transform duration-300"
-                src={{ url_for('static', filename='assets/productivity2.png') }} alt="man_home">
+            <img class="p-3 w-60 md:w-80 rounded-2xl hover:scale-110 transform transition-transform duration-300" src={{
+                url_for('static', filename='assets/productivity2.png' ) }} alt="man_home">
         </div>
 
         <div class="text-center md:text-left">
             <h1 class="hover:scale-110 transform transition-transform duration-300"
                 style="font-family: 'Libertinus Keyboard', sans-serif; font-size:5.5rem">LIFE</h1>
-            <h1 class="mx-3" style="font-family: 'Oswald', sans-serif; font-size:7.5rem">RECEIPT</h1>
+            <h1 class="mx-3" style="font-family: 'Oswald', sans-serif; font-size:7.5rem">RECEIPTS</h1>
             <p class="mt-4 text-lg text-gray-700 max-w-md">Life Receipt helps users visualize how they spend their day,
                 providing a graphical representation of their time usage for better productivity and insight.</p>
-            
-                <button
-                class="mt-6 px-6 py-3 bg-green-400 text-black rounded shadow-xl shadow-green-700/50 hover:scale-105 transform transition-transform duration-300"> <a href="/signup"> Get
-                Started </a> </button>
-            
+
+            <button
+                class="mt-6 px-6 py-3 bg-green-400 text-black rounded shadow-xl shadow-green-700/50 hover:scale-105 transform transition-transform duration-300">
+                <a href="/signup"> Get
+                    Started </a> </button>
+
         </div>
     </div>
 
@@ -143,6 +154,15 @@
         <p class="text-center mt-6 text-gray-400">&copy; 2025 Life Receipt. All rights reserved.</p>
     </footer>
 </body>
+<script>
+    setTimeout(() => {
+        const flash = document.getElementById("flash-message");
+        if (flash) {
+            flash.style.opacity = "0";
+            flash.style.transform = "translate(-50%, -20px)";
+            setTimeout(() => flash.remove(), 500);
+        }
+    }, 5000); // 5 seconds
+</script>
+
 </html>
-
-

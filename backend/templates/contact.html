@@ -26,7 +26,27 @@
         {% include "navbar.html" %}
         <div class="bg-sky-200 p-9 rounded-2xl shadow-lg w-full max-w-lg flex flex-col justify-center my-10 mx-auto">
             <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Contact Us</h2>
-            <form action="#" method="POST" class="space-y-5">
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div id="flashMsg"
+                class="bg-white text-gray-800 p-3 rounded-lg shadow text-center mb-4 transition-opacity duration-500">
+                {{ messages[0] }}
+            </div>
+
+            <script>
+                setTimeout(() => {
+                    const msg = document.getElementById("flashMsg");
+                    if (msg) {
+                        msg.style.opacity = "0";
+                        setTimeout(() => msg.remove(), 500);
+                    }
+                }, 5000); // disappears after 5 sec
+            </script>
+            {% endif %}
+            {% endwith %}
+
+            <form action="/contact" method="POST" class="space-y-5">
                 <div>
                     <label class="block mb-2 text-gray-600">Email</label>
                     <input type="email" name="email" placeholder="Enter your email" required
@@ -39,7 +59,7 @@
                 </div>
                 <div>
                     <label class="block mb-2 text-gray-600">Mobile </label>
-                    <input type="number" name="mobile" placeholder="Enter your mobile number" required
+                    <input type="" name="mobile" placeholder="Enter your mobile number" required
                         class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                 </div>
                 <button type="submit"
@@ -50,7 +70,7 @@
 
         </div>
     </div>
-   
+
 </body>
 
 </html>

@@ -13,6 +13,9 @@ from pdf import generate_receipt_pdf
 from tensorflow.keras.models import load_model
 import joblib
 import numpy as np
+import sqlite3
+import os
+from werkzeug.utils import secure_filename
 
 # ---------- LOAD LSTM MODEL ----------
 lstm_model = load_model("../models/productivity_lstm_model.h5")
@@ -25,6 +28,7 @@ app.secret_key = "super_secret_key"
 
 app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
 app.config['SESSION_COOKIE_SECURE'] = False
+
 
 # ---------------- ENERGY SYSTEM ----------------
 ENERGY_RULES = {
@@ -40,7 +44,10 @@ ENERGY_RULES = {
     "Gaming": -8 
 }
 
-DB_NAME = "database.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_NAME = os.path.join(BASE_DIR, "database.db")  
+
+print("DB USED:", DB_NAME)  
 
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME, timeout=10, check_same_thread=False)
@@ -111,32 +118,54 @@ def init_db():
         )
     """)
 
+    # Contact table 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS enquiries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT,
+            enquiry TEXT,
+            mobile TEXT
+        )
+    """)
+
     conn.commit()
     conn.close()
-
+    
+    
 # -------- SIGNUP ROUTE --------
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
         name = request.form["name"]
+        username = request.form["username"]   # ✅ NEW
         email = request.form["email"]
         password = request.form["password"]
 
         conn = get_db_connection()
+        conn = sqlite3.connect(DB_NAME, timeout=10, check_same_thread=False)
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
         try:
             cursor.execute(
-                "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-                (name, email, password)
+                "INSERT INTO users (name, username, email, password) VALUES (?, ?, ?, ?)",
+                (name, username, email, password)
             )
             conn.commit()
             conn.close()
             return redirect("/login")
+
         except sqlite3.IntegrityError:
             conn.close()
             return "Email already exists!"
-
+        
+    password = request.form.get("password")
+    confirm_password = request.form.get("confirm_password")
+    
+    if password != confirm_password:
+        return "Passwords do not match!"
+    
     return render_template("signup.html")
 
 #------ LOGIN ROUTE -------
@@ -175,9 +204,80 @@ def dashboard():
         return redirect(url_for("login"))
     return render_template("dashboard.html")
 
-@app.route("/contact")
+@app.route("/profile")
+def profile():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    conn = get_db_connection()
+    user = conn.execute(
+        "SELECT * FROM users WHERE user_id=?",
+        (session["user_id"],)
+    ).fetchone()
+    conn.close()
+
+    return render_template("profile.html", user=user)
+
+UPLOAD_FOLDER = "static/uploads"
+
+@app.route("/update-profile", methods=["POST"])
+def update_profile():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    name = request.form.get("name")
+    username = request.form.get("username")
+    file = request.files.get("profile_pic")
+    print("FILE:", file)
+
+    conn = get_db_connection()
+
+    if file and file.filename != "":
+        import os
+        from werkzeug.utils import secure_filename
+
+        filename = secure_filename(file.filename)
+        filepath = os.path.join("static/uploads", filename)
+        file.save(filepath)
+
+        conn.execute(
+            "UPDATE users SET name=?, username=?, profile_pic=? WHERE user_id=?",
+            (name, username, filename, session["user_id"])
+        )
+    else:
+        conn.execute(
+            "UPDATE users SET name=?, username=? WHERE user_id=?",
+            (name, username, session["user_id"])
+        )
+
+    conn.commit()
+    conn.close()
+    
+    flash("Profile updated successfully!")
+    return redirect(url_for("home"))
+
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
-    return render_template("contact.html")
+    if request.method == 'POST':
+        email = request.form['email']
+        enquiry = request.form['enquiry']
+        mobile = request.form['mobile']
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "INSERT INTO enquiries (email, enquiry, mobile) VALUES (?, ?, ?)",
+            (email, enquiry, mobile)
+        )
+
+        conn.commit()
+        conn.close()
+
+        flash("Thanks! We'll get back to you soon 😊")
+        return redirect('/contact')
+
+    return render_template('contact.html')
 
 @app.route("/")
 def home():
