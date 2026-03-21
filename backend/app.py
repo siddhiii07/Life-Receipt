@@ -495,49 +495,114 @@ def analytics():
     moods = {}
     for row in mood_data:
         moods[row["mood"]] = row["total"]
-
+        
     insights = []
-    # Productivity insight
-    if productive > leisure:
-        insights.append("— You're having more productive days than leisure ones. Keep it up!")
-    else:
-        insights.append("Try to reduce leisure activities and focus more on productive tasks.")
-    
-    # Study insight
-    if study >= 120:
-        insights.append("Great job! You're dedicating strong time to study.")
-    elif study > 0:
-        insights.append("Try increasing your study time for better progress.")
-    else:
-        insights.append("You haven't studied yet. Start small today!")
-
-    # Scrolling warning
-    if scrolling > 60:
-        insights.append("High screen time detected. Consider reducing scrolling.")
-
-    # Fitness insight
-    if fitness > 0:
-        insights.append("Nice! You're staying active.")
-    else:
-        insights.append("Try adding some physical activity to your routine.")
-
-    # Mood insight
-    if "happy" in moods and moods["happy"] > 0:
-        insights.append("Your mood looks positive. Great sign!")
-    
-    if study > entertainment:
-        insights.append("You're prioritizing learning over entertainment. Great balance!")
-    
-    # -------- RANDOM TIP --------
     import random
+
+    # -------- TOTAL + RATIOS --------
+    total_time = study + fitness + entertainment + scrolling
+    
+    if total_time > 0:
+        study_ratio = study / total_time
+        
+        if study_ratio > 0.5:
+            insights.append("You're spending most of your time studying — strong focus!")
+        elif study_ratio > 0.3:
+            insights.append("Good balance, but there's room to increase study time.")
+        else:
+            insights.append("Study time is quite low compared to other activities.")
+            
+    else:
+        insights.append("No activity recorded yet — start tracking your day!")
+
+    # -------- PRODUCTIVITY --------
+    if productive > leisure:
+        insights.append(random.choice([
+            "You're having more productive time than leisure — great discipline!",
+            "Nice! You're staying productive consistently.",
+        ]))
+    else:
+        insights.append(random.choice([
+            "Leisure is taking over — try regaining control of your time.",
+            "Try balancing fun with productivity a bit more."
+        ]))
+
+    # -------- DOMINANT ACTIVITY --------
+    activities = {
+        "study": study,
+        "fitness": fitness,
+        "entertainment": entertainment,
+        "scrolling": scrolling
+    }
+    
+    if total_time > 0:
+        top_activity = max(activities, key=activities.get)
+        
+        if top_activity == "scrolling":
+            insights.append("Scrolling dominates your time — consider cutting it down.")
+        elif top_activity == "study":
+            insights.append("You're highly focused on studying — keep that momentum!")
+        elif top_activity == "entertainment":
+            insights.append("Looks like a chill day — just don’t lose track of your goals.")
+        elif top_activity == "fitness":
+            insights.append("You're prioritizing health — that's amazing!")
+
+    # -------- FITNESS --------
+    if fitness == 0:
+        insights.append("Try adding some physical activity — even a short walk helps!")
+    else:
+        insights.append("Nice! You're staying active.")
+
+    # -------- MOOD --------
+    if moods:
+        dominant_mood = max(moods, key=moods.get)
+        
+        if dominant_mood == "happy":
+            insights.append("You're in a positive mindset — great time to be productive!")
+        elif dominant_mood == "sad":
+            insights.append("Seems like a low day — take it easy and reset.")
+        elif dominant_mood == "tired":
+            insights.append("You're feeling tired — rest might help.")
+
+    # -------- STUDY VS ENTERTAINMENT --------
+    if study > entertainment:
+        insights.append(random.choice([
+            "You're prioritizing learning over entertainment — great balance!",
+            "Good job keeping studies ahead of distractions."
+        ]))
+
+    # -------- SMART TIP --------
     tips = [
         "Start your day with your hardest task.",
-        "Use the 25-minute focus technique (Pomodoro).",
         "Take short breaks to stay fresh.",
         "Avoid distractions while studying.",
+        "Use the 25-minute focus technique (Pomodoro).",
         "Plan your day the night before."
     ]
-    random_tip = random.choice(tips)
+    
+    if scrolling > 60:
+        tip = "Try a 30-minute no-phone challenge."
+    elif study < 60:
+        tip = "Start with just 20 minutes of focused study."
+    elif fitness == 0:
+        tip = "Even a short walk can boost your energy."
+    elif productive < leisure:
+        tip = "Plan your next day before sleeping."
+    else:
+        tip = random.choice(tips)
+    
+    # ------ Alerts------
+    alert = None
+    if total_time == 0:
+        alert = "No activity logged today — start tracking your day 👀"
+    elif study == 0:
+        alert = "You haven't studied today yet 👀"
+    elif scrolling > 60:
+        alert = "Too much scrolling detected — take a break!"
+    elif productive > leisure:
+        alert = "Great job! You're having a productive day 🔥"
+    elif fitness == 0:
+        alert = "No physical activity today — even a short walk helps!"
     
     return render_template(
         "analytics.html",
@@ -551,7 +616,8 @@ def analytics():
         dates=dates,
         selected_date=selected_date,
         insights=insights,
-        tip=random_tip
+        tip=tip,
+        alert=alert
     )
 
 # ---------- API TO ADD ACTIVITY ----------
