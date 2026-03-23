@@ -15,16 +15,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tourney:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Flavors&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap" rel="stylesheet">
 
   <style>
     body {
       font-family: "serif", "oswald", "Bitcount Grid Double Ink", sans-serif;
       margin: 0;
     }
+
+    .syne{
+      font-family: 'Syne Mono',serif;
+    }
   </style>
 </head>
 
-<body class="bg-gradient-to-r from-indigo-200 to-yellow-100">
+<body class="bg-gradient-to-r from-indigo-200 to-yellow-100 syne">
   {% include "navbar.html" %}
   <div class="flex items-center justify-center min-h-screen pt-16 pb-10">
     <div class="mx-7">
@@ -39,7 +49,7 @@
       </h1>
     </div>
     <div class="bg-white p-9 rounded-2xl shadow-lg w-full max-w-lg my-10">
-      <div class="flex flex-row items-center">
+      <div class="flex flex-col items-center mb-2">
         <img class="w-40 h-40" src="{{ url_for('static', filename='assets/time1.png') }}" alt="time1" />
         <h2
           class="text-3xl mx-10 font-bold mb-6 text-center text-gray-800 hover:text-green-600 transition-colors duration-300">

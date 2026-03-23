@@ -1,76 +1,129 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@400;700&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tourney:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Flavors&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
-        body {
-            font-family: "serif", "oswald", 'Bitcount Grid Double Ink', sans-serif;
-        }
+
+      .syne {
+        font-family: "Syne Mono", serif;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-    <div class="bg-gradient-to-r from-yellow-100 to-indigo-200 min-h-screen ">
-        {% include "navbar.html" %}
-        <div class="bg-sky-200 p-9 rounded-2xl shadow-lg w-full max-w-lg flex flex-col justify-center my-10 mx-auto">
-            <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Contact Us</h2>
+  <body >
+    <div class="bg-gradient-to-r from-yellow-100 to-indigo-200 min-h-screen syne">
+      {% include "navbar.html" %}
+      <div
+        class="bg-sky-200 p-9 rounded-2xl shadow-lg w-full max-w-lg flex flex-col justify-center my-10 mx-auto"
+      >
+        <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">
+          Contact Us
+        </h2>
 
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-            <div id="flashMsg"
-                class="bg-white text-gray-800 p-3 rounded-lg shadow text-center mb-4 transition-opacity duration-500">
-                {{ messages[0] }}
-            </div>
-
-            <script>
-                setTimeout(() => {
-                    const msg = document.getElementById("flashMsg");
-                    if (msg) {
-                        msg.style.opacity = "0";
-                        setTimeout(() => msg.remove(), 500);
-                    }
-                }, 5000); // disappears after 5 sec
-            </script>
-            {% endif %}
-            {% endwith %}
-
-            <form action="/contact" method="POST" class="space-y-5">
-                <div>
-                    <label class="block mb-2 text-gray-600">Email</label>
-                    <input type="email" name="email" placeholder="Enter your email" required
-                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500">
-                </div>
-                <div>
-                    <label class="block mb-2 text-gray-600">Enquiry</label>
-                    <input type="text" name="enquiry" placeholder="Enter your enquiry" required
-                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                </div>
-                <div>
-                    <label class="block mb-2 text-gray-600">Mobile </label>
-                    <input type="" name="mobile" placeholder="Enter your mobile number" required
-                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                </div>
-                <button type="submit"
-                    class="w-full bg-yellow-100 text-black py-2 rounded-lg font-semibold hover:bg-green-200 hover:scale-105 transition-transform duration-300">
-                    Submit
-                </button>
-            </form>
-
+        {% with messages = get_flashed_messages() %} {% if messages %}
+        <div
+          id="flashMsg"
+          class="bg-white text-gray-800 p-3 rounded-lg shadow text-center mb-4 transition-opacity duration-500"
+        >
+          {{ messages[0] }}
         </div>
+
+        <script>
+          setTimeout(() => {
+            const msg = document.getElementById("flashMsg");
+            if (msg) {
+              msg.style.opacity = "0";
+              setTimeout(() => msg.remove(), 500);
+            }
+          }, 5000); // disappears after 5 sec
+        </script>
+        {% endif %} {% endwith %}
+
+        <form action="/contact" method="POST" class="space-y-5">
+          <div>
+            <label class="block mb-2 text-gray-600">Email</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              required
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+            />
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-600">Enquiry</label>
+            <input
+              type="text"
+              name="enquiry"
+              placeholder="Enter your enquiry"
+              required
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-600">Mobile </label>
+            <input
+              type=""
+              name="mobile"
+              placeholder="Enter your mobile number"
+              required
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-yellow-100 text-black py-2 rounded-lg font-semibold hover:bg-green-200 hover:scale-105 transition-transform duration-300"
+          >
+            Submit
+          </button>
+        </form>
+      </div>
     </div>
-
-</body>
-
+  </body>
 </html>

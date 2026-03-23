@@ -9,6 +9,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tourney:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Flavors&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap" rel="stylesheet">
 
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,10 +22,13 @@
     <!-- GLOBAL STYLE -->
     <style>
         body {
-            font-family: 'Oswald', sans-serif;
             background: #0f172a;
             color: white;
         }
+
+        .syne {
+        font-family: "Syne Mono", serif;
+      }
 
         h1 {
             font-family: 'Bitcount Grid Double Ink', cursive;
@@ -71,7 +80,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 
-<body>
+<body class="syne">
 
     {% include "navbar.html" %}
 

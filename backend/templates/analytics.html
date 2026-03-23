@@ -14,12 +14,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tourney:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Flavors&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap" rel="stylesheet">
 
 </head>
 <style>
-    body {
-        font-family: 'Oswald', sans-serif;
-    }
+
+    .syne {
+        font-family: "Syne Mono", serif;
+      }
 
     h1 {
         font-family: 'Bitcount Grid Double Ink', cursive;
@@ -30,7 +37,7 @@
     }
 </style>
 
-<body class="bg-gray-100">
+<body class="syne bg-gradient-to-br from-blue-200 to-yellow-100>
 
     {% include "navbar.html" %}
 
@@ -41,9 +48,9 @@
     </div>
     {% endif %}
 
-    <div class="max-w-6xl mx-auto mt-10">
+    <div class="max-w-6xl mx-auto mt-10 syne">
 
-        <h1 class="text-3xl text-center mb-6 tracking-wide">
+        <h1 class="text-3xl text-center mb-6 tracking-wide syne font-semibold">
             📊 Activity Analysis
         </h1>
 
@@ -56,7 +63,7 @@
         </h2>
 
         <!-- DATE SELECTOR -->
-        <div class="bg-white p-6 rounded-xl shadow mb-8">
+        <div class="bg-indigo-300 p-6 rounded-xl shadow mb-8 ">
 
             <h2 class="text-lg mb-4 text-gray-700">📅 Select Date</h2>
 
@@ -72,7 +79,7 @@
                 <input type="date" value="{{ selected_date if selected_date else '' }}" onchange="goToDate(this.value)"
                     class="border p-2 rounded-lg shadow-sm">
 
-                <p class="text-sm text-gray-400 mt-2">
+                <p class="text-sm text-blue mt-2">
                     Pick a date to view your activity insights
                 </p>
             </div>
@@ -80,11 +87,11 @@
         </div>
 
         <!-- INSIGHTS -->
-        <div class="bg-white p-6 rounded-xl shadow mb-8">
+        <div class="bg-yellow-50 p-6 rounded-xl shadow mb-8">
             <h2 class="text-lg mb-4 text-gray-700">🧠 Insights</h2>
 
             {% for insight in insights %}
-            <p class="mb-2 text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-lg">
+            <p class="mb-2 text-gray-700 leading-relaxed bg-yellow-100 p-3 rounded-lg">
                 {{ insight }}
             </p>
             {% endfor %}
