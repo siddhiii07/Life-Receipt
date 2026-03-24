@@ -7,22 +7,36 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap"
-        rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tourney:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Flavors&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap" rel="stylesheet">
+    
 
     <title>Life Receipt</title>
     <style>
-        body {
-            font-family: "serif", "oswald", 'Bitcount Grid Double Ink', sans-serif;
+        div,h2{
+            font-family: 'Syne Mono';
         }
+
+        h3{
+            font-family: 'Funnel Display', Courier, monospace;
+        }
+
+        .syne{
+            font-family: "Syne Mono",serif;;
+        }
+
+       
     </style>
 </head>
 
-<body class="bg-gradient-to-r from-green-200 to-blue-200">
+<body class="syne" bg-gradient-to-r from-green-200 to-blue-200">
     {% include "navbar.html" %}
 
     <!-- Flash message here -->
@@ -38,7 +52,8 @@
     <div class="flex p-2 justify-between items-center bg-black font-sans text-white relative z-50">
         <div class="flex items-center">
             <img class="size-10 ml-10 shadow-xl" src="../assets/work-life.png" alt="clock">
-            <p class="p-3 m-0">Life Receipt</p>
+            <p class="p-3 m-0"> Life Receipt </p>
+             
         </div>
 
         <div class="flex items-center space-x-4 mr-10">
@@ -86,7 +101,7 @@
     </div> -->
 
     <!-- Hero Section -->
-    <div class="flex flex-col md:flex-row justify-center items-center p-8">
+    <div class="flex flex-col md:flex-row justify-center items-center p-8 bg-gradient-to-br from-blue-200 to-purple-100 " style="min-height:80vh;">
         <div class="m-4">
             <img class="p-3 w-60 md:w-80 rounded-2xl hover:scale-110 transform transition-transform duration-300" src={{
                 url_for('static', filename='assets/productivity2.png' ) }} alt="man_home">
@@ -94,14 +109,14 @@
 
         <div class="text-center md:text-left">
             <h1 class="hover:scale-110 transform transition-transform duration-300"
-                style="font-family: 'Libertinus Keyboard', sans-serif; font-size:5.5rem">LIFE</h1>
-            <h1 class="mx-3" style="font-family: 'Oswald', sans-serif; font-size:7.5rem">RECEIPTS</h1>
-            <p class="mt-4 text-lg text-gray-700 max-w-md">Life Receipt helps users visualize how they spend their day,
-                providing a graphical representation of their time usage for better productivity and insight.</p>
+                style="font-family:  'Flavors'; font-size:7.5rem; height: 140px; ">LiFe</h1>
+            <h1 class="m-0" style="font-family: 'Flavors', Bitcount Grid Double Ink; font-size:7.5rem; height: 150px">RECEiPTS</h1>
+            <p class="mt-0 text-lg text-gray-700 max-w-md" style="font-family:'Syne Mono'; ">KNOW WHERE YOUR TIME GOES.</p>
 
             <button
-                class="mt-6 px-6 py-3 bg-green-400 text-black rounded shadow-xl shadow-green-700/50 hover:scale-105 transform transition-transform duration-300">
-                <a href="/signup"> Get
+                class="mt-6 px-6 py-3 bg-yellow-200 text-black rounded shadow-xl shadow-yellow-700/30 hover:scale-105 
+                transform transition-transform duration-300" style="font-family: 'Syne Mono'";>
+                <a href="/dashboard"> Get
                     Started </a> </button>
 
         </div>

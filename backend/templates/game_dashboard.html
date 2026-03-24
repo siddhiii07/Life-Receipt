@@ -1,131 +1,168 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
-<head>
+  <head>
     <title>Game Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tourney:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Flavors&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
-        body {
-            font-family: 'Oswald', sans-serif;
-            background: #0f172a;
-            color: white;
-            text-align: center;
-        }
+      body {
+        text-align: center;
+      }
 
-        h1 {
-            font-family: 'Bitcount Grid Double Ink', cursive;
-            font-size: 2rem !important;
-            margin-bottom: 20px;
-        }
+      .syne {
+        font-family: "Syne Mono", serif;
+      }
 
-        h2 {
-            font-family: 'Space Grotesk', sans-serif;
-        }
+      h1 {
+        font-size: 2rem !important;
+        padding-top: 50px;
+        color: #3e1661;
+        font-style: underline;
+      }
 
-        .signature {
-            font-family: 'Sacramento', cursive;
-        }
+      .card {
+        background: #1e293b;
+        margin: 30px;
+        width: 350px;
+        height: 150px;
+        border-radius: 15px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.3rem;
+      }
 
-        .keyboard {
-            font-family: 'Libertinus Keyboard', monospace;
-        }
+      .card-div{
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin:50px;
+      }
 
-        .card {
-            background: #1e293b;
-            padding: 20px;
-            margin: 20px auto;
-            width: 300px;
-            border-radius: 15px;
-        }
+      .bar {
+        height: 20px;
+        background: #334155;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 10px;
+      }
 
-        .bar {
-            height: 20px;
-            background: #334155;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
+      .fill {
+        height: 100%;
+        background: limegreen;
+        transition: width 0.6s ease-in-out;
+      }
 
-        .fill {
-            height: 100%;
-            background: limegreen;
-            transition: width 0.6s ease-in-out;
-        }
-
-        .xp-fill {
-            height: 100%;
-            background: gold;
-            transition: width 0.6s ease-in-out;
-        }
+      .xp-fill {
+        height: 100%;
+        background: gold;
+        transition: width 0.6s ease-in-out;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body class="syne bg-gradient-to-r from-pink-100 to-indigo-200">
     {% include "navbar.html" %}
 
     <h1>Your Productivity Profile</h1>
 
-    <div class="card">
+    <div class="card-div">
+      <div class="card">
         <h2>📊 Today's Status</h2>
 
         {% if today_status == "Productive" %}
-        <p style="color:limegreen;font-size:20px;">🔥 Productive Day</p>
+        <p style="color: limegreen; font-size: 20px">🔥 Productive Day</p>
 
         {% elif today_status == "Leisure" %}
-        <p style="color:orange;font-size:20px;">🌙 Leisure Day</p>
+        <p style="color: orange; font-size: 20px">🌙 Leisure Day</p>
 
         {% else %}
-        <p style="color:gray;font-size:18px;">No activities logged today</p>
+        <p style="color: gray; font-size: 18px">No activities logged today</p>
         {% endif %}
+      </div>
 
-    </div>
-
-    <!-- Energy -->
-    <div class="card">
+      <!-- Energy -->
+      <div class="card">
         <h2>⚡ Energy: {{ energy }}/100</h2>
         <div class="bar">
-            <div class="fill" style="width: {{ energy }}%;"></div>
+          <div class="fill" style="width: {{ energy }}%;"></div>
         </div>
-    </div>
+      </div>
 
-    <!-- Streak -->
-    <div class="card">
+      <!-- Streak -->
+      <div class="card">
         <h2>🔥 Streak: {{ streak }} days</h2>
-    </div>
+      </div>
 
-    <!-- Level + XP -->
-    <div class="card">
+      <!-- Level + XP -->
+      <div class="card">
         <h2>⭐ Level: {{ level }}</h2>
         <p>XP: {{ xp }} / 100</p>
 
         <div class="bar">
-            <div class="xp-fill" style="width: {{ xp }}%;"></div>
+          <div class="xp-fill" style="width: {{ xp }}%;"></div>
         </div>
-    </div>
-    <!-- Badge -->
-    <div class="card">
+      </div>
+      <!-- Badge -->
+      <div class="card">
         <h2>🏆 Weekly Badge</h2>
 
         {% if badge == "Gold 🥇" %}
-        <p style="color:gold;font-size:20px;">🥇 Gold Achiever</p>
+        <p style="color: gold; font-size: 20px">🥇 Gold Achiever</p>
 
         {% elif badge == "Silver 🥈" %}
-        <p style="color:silver;font-size:20px;">🥈 Silver Star</p>
+        <p style="color: silver; font-size: 20px">🥈 Silver Star</p>
 
         {% elif badge == "Bronze 🥉" %}
-        <p style="color:#cd7f32;font-size:20px;">🥉 Bronze Beginner</p>
+        <p style="color: #cd7f32; font-size: 20px">🥉 Bronze Beginner</p>
 
         {% else %}
-        <p style="color:gray;">Keep going to earn badges!</p>
+        <p style="color: gold">Keep going to earn badges!</p>
         {% endif %}
+      </div>
     </div>
-
-</body>
-
+  </body>
 </html>

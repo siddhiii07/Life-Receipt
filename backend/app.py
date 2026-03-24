@@ -91,6 +91,9 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
+        username TEXT UNIQUE,
+        badge TEXT,
+        profile_pic TEXT,
         email TEXT UNIQUE,
         password TEXT,
         energy INTEGER DEFAULT 50,
@@ -183,7 +186,7 @@ def login():
         conn.close()
 
         if user:
-            session["user_id"] = user["user_id"]
+            session["user_id"] = user[0]
             session["email"] = user["email"]   
             return redirect(url_for("dashboard"))
         else:
