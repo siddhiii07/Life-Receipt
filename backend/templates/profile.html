@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    {% include "navbar.html" %}
+
+    <div class="max-w-2xl mx-auto mt-10 p-8 bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
+
+        <h1 class="text-2xl mb-6 text-white">Edit Profile</h1>
+
+        <!-- Form -->
+        <form action="/update-profile" method="POST" enctype="multipart/form-data">
+
+            <!-- Profile Image -->
+            <div class="flex justify-center mb-6">
+                <div class="relative">
+
+                    {% if user.profile_pic %}
+                    <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}"
+                        class="w-40 h-40 rounded-full object-cover">
+                    {% else %}
+                    <div
+                        class="w-40 h-40 rounded-full bg-gray-500 flex items-center justify-center text-5xl text-white">
+                        {{ user.name[0] }}
+                    </div>
+                    {% endif %}
+
+                    <!-- 📷 Upload button stays -->
+                    <label
+                        class="absolute bottom-2 right-2 bg-black/70 p-2 rounded-full cursor-pointer hover:scale-110">
+                        📷
+                        <input type="file" name="profile_pic" class="hidden">
+                    </label>
+
+                </div>
+            </div>
+            <div>
+                <label class="text-gray-300">Display Name</label>
+                <input type="text" name="name" value="{{ user.name }}"
+                    class="w-full mt-1 p-3 bg-gray-800 rounded-lg border border-gray-600 text-white">
+            </div>
+
+            <div>
+                <label class="text-gray-300">Username</label>
+                <input type="text" name="username" value="{{ user.username }}"
+                    class="w-full mt-1 p-3 bg-gray-800 rounded-lg border border-gray-600 text-white">
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <a href="/dashboard" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 text-white">Cancel</a>
+
+                <button type="submit" class="px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200">
+                    Save
+                </button>
+            </div>
+
+        </form>
+    </div>
+</body>
+
+</html>

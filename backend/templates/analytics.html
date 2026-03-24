@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Analytics</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
+
+</head>
+<style>
+    body {
+        font-family: 'Oswald', sans-serif;
+    }
+
+    h1 {
+        font-family: 'Bitcount Grid Double Ink', cursive;
+    }
+
+    h2 {
+        font-family: 'Space Grotesk', sans-serif;
+    }
+</style>
+
+<body class="bg-gray-100">
+
+    {% include "navbar.html" %}
+
+    {% if alert %}
+    <div id="alertBox"
+        class="fixed top-20 right-5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-2xl shadow-xl hidden z-50 animate-pulse">
+        {{ alert }}
+    </div>
+    {% endif %}
+
+    <div class="max-w-6xl mx-auto mt-10">
+
+        <h1 class="text-3xl text-center mb-6 tracking-wide">
+            📊 Activity Analysis
+        </h1>
+
+        <h2 class="text-center text-lg mb-6">
+            {% if selected_date %}
+            📅 Showing: {{ selected_date }}
+            {% else %}
+            All Time Analysis
+            {% endif %}
+        </h2>
+
+        <!-- DATE SELECTOR -->
+        <div class="bg-white p-6 rounded-xl shadow mb-8">
+
+            <h2 class="text-lg mb-4 text-gray-700">📅 Select Date</h2>
+
+            <div class="flex items-center gap-4">
+
+                <!-- ALL TIME BUTTON -->
+                <a href="/analytics" class="px-4 py-2 rounded-lg
+           {{ 'bg-blue-500 text-white shadow-md' if not selected_date else 'bg-gray-200 hover:bg-gray-300' }}">
+                    All Time
+                </a>
+
+                <!-- CALENDAR INPUT -->
+                <input type="date" value="{{ selected_date if selected_date else '' }}" onchange="goToDate(this.value)"
+                    class="border p-2 rounded-lg shadow-sm">
+
+                <p class="text-sm text-gray-400 mt-2">
+                    Pick a date to view your activity insights
+                </p>
+            </div>
+
+        </div>
+
+        <!-- INSIGHTS -->
+        <div class="bg-white p-6 rounded-xl shadow mb-8">
+            <h2 class="text-lg mb-4 text-gray-700">🧠 Insights</h2>
+
+            {% for insight in insights %}
+            <p class="mb-2 text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-lg">
+                {{ insight }}
+            </p>
+            {% endfor %}
+        </div>
+
+        <!-- TIP -->
+        <div class="bg-yellow-50 border border-yellow-200 p-6 rounded-xl shadow mb-6">
+            <h2 class="text-lg mb-2 text-yellow-700">💡 Tip of the Day</h2>
+
+            <p class="text-gray-700">
+                {{ tip }}
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- PIE CHART -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+                <h2 class="text-lg font-semibold mb-4 text-center">Activity Distribution</h2>
+                <canvas id="pieChart"></canvas>
+            </div>
+
+            <!-- BAR CHART -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+                <h2 class="text-lg font-semibold mb-4 text-center">Time Spent (Minutes)</h2>
+                <canvas id="barChart"></canvas>
+            </div>
+
+            <!-- PRODUCTIVITY -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+                <h2 class="text-lg font-semibold mb-4 text-center">Productive vs Leisure</h2>
+                <canvas id="productivityChart"></canvas>
+            </div>
+
+            <!-- MOOD -->
+            <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+                <h2 class="text-lg font-semibold mb-4 text-center">Mood Distribution</h2>
+                <canvas id="moodChart"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+        function goToDate(date) {
+            if (date) {
+                window.location.href = "/analytics?date=" + date;
+            }
+        }
+
+        const study = {{ study }};
+        const fitness = {{ fitness }};
+        const entertainment = {{ entertainment }};
+        const scrolling = {{ scrolling }};
+
+        const productive = {{ productive }};
+        const leisure = {{ leisure }};
+
+        const moods = {{ moods| tojson }};
+
+        // PIE
+        new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Study', 'Fitness', 'Entertainment', 'Scrolling'],
+                datasets: [{
+                    data: [study, fitness, entertainment, scrolling],
+                    backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444']
+                }]
+            }
+        });
+
+        // BAR
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Study', 'Fitness', 'Entertainment', 'Scrolling'],
+                datasets: [{
+                    label: "Minutes",
+                    data: [study, fitness, entertainment, scrolling],
+                    backgroundColor: '#6366f1'
+                }]
+            }
+        });
+
+        // PRODUCTIVITY
+        new Chart(document.getElementById('productivityChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Productive', 'Leisure'],
+                datasets: [{
+                    data: [productive, leisure],
+                    backgroundColor: ['#22c55e', '#ef4444']
+                }]
+            }
+        });
+
+        // MOOD
+        new Chart(document.getElementById('moodChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(moods),
+                datasets: [{
+                    label: "Mood Count",
+                    data: Object.values(moods),
+                    backgroundColor: '#f59e0b'
+                }]
+            }
+        });
+
+        // ALERTS
+        const alertMessage = "{{ alert if alert else '' }}";
+
+        if (alertMessage) {
+            const box = document.getElementById("alertBox");
+
+            if (box) {
+                box.classList.remove("hidden");
+
+                setTimeout(() => {
+                    box.classList.add("hidden");
+                }, 4000); // disappears after 4 sec
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>

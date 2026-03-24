@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Game Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Oswald', sans-serif;
+            background: #0f172a;
+            color: white;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Bitcount Grid Double Ink', cursive;
+            font-size: 2rem !important;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .signature {
+            font-family: 'Sacramento', cursive;
+        }
+
+        .keyboard {
+            font-family: 'Libertinus Keyboard', monospace;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            margin: 20px auto;
+            width: 300px;
+            border-radius: 15px;
+        }
+
+        .bar {
+            height: 20px;
+            background: #334155;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .fill {
+            height: 100%;
+            background: limegreen;
+            transition: width 0.6s ease-in-out;
+        }
+
+        .xp-fill {
+            height: 100%;
+            background: gold;
+            transition: width 0.6s ease-in-out;
+        }
+    </style>
+</head>
+
+<body>
+    {% include "navbar.html" %}
+
+    <h1>Your Productivity Profile</h1>
+
+    <div class="card">
+        <h2>📊 Today's Status</h2>
+
+        {% if today_status == "Productive" %}
+        <p style="color:limegreen;font-size:20px;">🔥 Productive Day</p>
+
+        {% elif today_status == "Leisure" %}
+        <p style="color:orange;font-size:20px;">🌙 Leisure Day</p>
+
+        {% else %}
+        <p style="color:gray;font-size:18px;">No activities logged today</p>
+        {% endif %}
+
+    </div>
+
+    <!-- Energy -->
+    <div class="card">
+        <h2>⚡ Energy: {{ energy }}/100</h2>
+        <div class="bar">
+            <div class="fill" style="width: {{ energy }}%;"></div>
+        </div>
+    </div>
+
+    <!-- Streak -->
+    <div class="card">
+        <h2>🔥 Streak: {{ streak }} days</h2>
+    </div>
+
+    <!-- Level + XP -->
+    <div class="card">
+        <h2>⭐ Level: {{ level }}</h2>
+        <p>XP: {{ xp }} / 100</p>
+
+        <div class="bar">
+            <div class="xp-fill" style="width: {{ xp }}%;"></div>
+        </div>
+    </div>
+    <!-- Badge -->
+    <div class="card">
+        <h2>🏆 Weekly Badge</h2>
+
+        {% if badge == "Gold 🥇" %}
+        <p style="color:gold;font-size:20px;">🥇 Gold Achiever</p>
+
+        {% elif badge == "Silver 🥈" %}
+        <p style="color:silver;font-size:20px;">🥈 Silver Star</p>
+
+        {% elif badge == "Bronze 🥉" %}
+        <p style="color:#cd7f32;font-size:20px;">🥉 Bronze Beginner</p>
+
+        {% else %}
+        <p style="color:gray;">Keep going to earn badges!</p>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>
