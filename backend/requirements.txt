@@ -3,3 +3,4 @@ flask-cors
 requests
 jinja2
 reportlab==4.0.8
+tensorflow
